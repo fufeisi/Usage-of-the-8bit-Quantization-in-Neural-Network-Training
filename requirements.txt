@@ -1,0 +1,6 @@
+bitsandbytes==0.35.4
+datasets==2.6.1
+numpy==1.23.3
+torch==1.13.0
+torchvision==0.13.1
+transformers==4.24.0
