@@ -14,3 +14,6 @@ This repo has the script to reproduce the experiments in project 'Usage of the 8
 ## Run
 - $cd ImageNet and $sh {quan18, quan50}.sh to train {ResNet18, ResNet50} with quantizing the activation maps.
 - $cd GLUE and $sh quan.sh to fine-tune RoBerta-large model on all GLUE tasks with quantizing the activation maps.
+
+## Credit
+- Some code in this repository is modified from [Transformers](https://github.com/huggingface/transformers). 

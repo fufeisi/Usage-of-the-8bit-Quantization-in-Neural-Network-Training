@@ -25,6 +25,7 @@ from torch.utils.data import Subset
 from quantization.tool import sum_memory
 import quantization.tool as tl
 from torch.profiler import profile, ProfilerActivity
+from quantization.tool import PrintGPU
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -381,12 +382,13 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
         optimizer.zero_grad()
         # compute output
         if i == 0:
-            # diff = grad_diff(model, criterion, images, target)
             tl.my_quantize.start_count()
             with profile(activities=[ProfilerActivity.CUDA], profile_memory=True, record_shapes=True) as prof:
                 output = model(images)
             buffer_size = sum_memory(prof)
             if args.rank == 0:
+                gpu_meter = PrintGPU()
+                gpu_meter.print_gpu(5)
                 # print(f'Gradient SQNR {diff}.')
                 print(f'Buffer Memory Usage:{buffer_size/1000**2} MB.')
                 tl.my_quantize.report()
@@ -415,6 +417,8 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
     peak_memo = torch.cuda.max_memory_allocated()/1000**2
     if args.rank == 0:
         print(f'Peak Memory: {peak_memo} MB')
+        gpu_meter.report()
+        gpu_meter.cancel()
     return time.time()-start_time, buffer_size, peak_memo
 
 

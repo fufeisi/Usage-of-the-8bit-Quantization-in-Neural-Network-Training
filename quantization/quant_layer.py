@@ -7,7 +7,7 @@ import quantization.tool as tl
 
 quan = True
 
-class qmm(torch.autograd.Function):
+class qlinear(torch.autograd.Function):
   @staticmethod
   def forward(ctx, x, weight, bias):
     if quan and tl.my_quantize.train:
@@ -15,13 +15,12 @@ class qmm(torch.autograd.Function):
       ctx.save_for_backward(qx, weight)
     else:
       ctx.save_for_backward(x, weight)
-    with torch.no_grad():
-      out = F.linear(x, weight, bias)  # (m, k) x (k, n)
-    return out  # (m, n)
+    out = F.linear(x, weight, bias)  # (m, k) x (k, n)
+    return out
   
   @staticmethod
   def backward(ctx, dout):
-    if quan:
+    if quan and tl.my_quantize.train:
       qx, weight = ctx.saved_tensors
       x = qx.dequantize()
     else:
@@ -47,7 +46,7 @@ class qrelu(torch.autograd.Function):
   
   @staticmethod
   def backward(ctx, dout):
-    if quan:
+    if quan and tl.my_quantize.train:
       qout = ctx.saved_tensors[0]
       out = qout.dequantize()
     else:
@@ -75,7 +74,7 @@ class qconv2d(torch.autograd.Function):
 
   @staticmethod
   def backward(ctx, grad_output):
-    if quan:
+    if quan and tl.my_quantize.train:
       qx, weight = ctx.saved_tensors
       x = qx.dequantize()
     else:
@@ -94,9 +93,9 @@ class qconv2d(torch.autograd.Function):
 
 class qLinear(torch.nn.Linear):
   def forward(self, input: Tensor) -> Tensor:
-      return qmm.apply(input, self.weight, self.bias)
+      return qlinear.apply(input, self.weight, self.bias)
 
-class qReLu(torch.nn.Module):
+class qReLu(torch.nn.ReLU):
   def forward(self, input: Tensor) -> Tensor:
     return qrelu.apply(input)
 
