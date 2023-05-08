@@ -9,7 +9,9 @@ The repository includes two directories:
 ## Requirements
 To run the scripts, please install the packages listed in requirements.txt using the following command:
 ### install the packages in requirements.txt
-- pip install -r requirements.txt
+```
+pip install -r requirements.txt
+```
 For the ImageNet experiments, you also need to download the dataset and set the path using the --data flag.
 
 ## Run
